@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ELECTRIC XTRA - Cyberpunk Landing Page by TemplateMo</title>
+    <script src="https://code.jquery.com/jquery-latest.min.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/busy-load/dist/app.min.js"></script>
+	<link href="https://cdn.jsdelivr.net/npm/busy-load/dist/app.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/gh/dinoqqq/simple-popup@master/dist/jquery.simple-popup.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/gh/dinoqqq/simple-popup@master/dist/jquery.simple-popup.min.css" rel="stylesheet" type="text/css" />
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;500;700&display=swap"
+        rel="stylesheet">
+
+    <style>
+        input,
+        textarea,
+        iframe,
+        button,
+        .form-email {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            color: #333;
+        }
+    </style>
+</head>
+
+<body>
+
+    <center>
+        <h3>
+            이 페이지는 실습 코드를 구현한 것입니다.
+        </h3>
+        <p> · utm의 경우에는 landing page url 뒤에 ?utm= Query를 사용하여 채널별 구분이 가능합니다. </p>
+        <p> · addrScript는 각자의 endpoint 주소로 바꿔야 합니다. </p>
+    </center>
+
+    <script type="application/javascript">
+        var ip = "null";
+        function getIP(json) {
+            console.log(json);
+            try {
+                ip = json.ip;
+            } catch (e) {
+                ip = 'unknown';
+            }
+            return;
+        }
+    </script>
+    <script type="application/javascript" src="https://jsonip.com?format=jsonp&callback=getIP"></script>
+
+    <script>
+
+        var mobile = 'desktop';
+        if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+            // true for mobile device
+            mobile = 'mobile';
+        }
+
+        /* UTM은 Landing URL (netlify.com)의 긑에 ?utm=yonsei 의 형식으로 지정할 수 있음 */
+        var queryString = location.search;
+        const urlParams = new URLSearchParams(queryString);
+        const utm = urlParams.get("utm")
+
+        // Sam pading value to start with 0. eg: 01, 02, .. 09, 10, ..
+				function padValue(value) {
+					return (value < 10) ? "0" + value : value;
+				}
+
+				function getTimeStamp() {
+					const date = new Date();
+
+					const year = date.getFullYear();
+					const month = date.getMonth() + 1;
+					const day = date.getDate();
+					const hours = date.getHours();
+					const minutes = date.getMinutes();
+					const seconds = date.getSeconds();
+
+					const formattedDate = `${padValue(year)}-${padValue(month)}-${padValue(day)} ${padValue(hours)}:${padValue(minutes)}:${padValue(seconds)}`;
+
+					return formattedDate;
+				}
+
+
+        // 쿠키에서 값을 가져오는 함수
+        function getCookieValue(name) {
+            const value = "; " + document.cookie;
+            const parts = value.split("; " + name + "=");
+            if (parts.length === 2) {
+                return parts.pop().split(";").shift();
+            }
+        }
+
+        // 쿠키에 값을 저장하는 함수
+        function setCookieValue(name, value, days) {
+            let expires = "";
+            if (days) {
+                const date = new Date();
+                date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+                expires = "; expires=" + date.toUTCString();
+            }
+            document.cookie = name + "=" + (value || "") + expires + "; path=/";
+        }
+
+        function getUVfromCookie() {
+            // 6자리 임의의 문자열 생성
+            const hash = Math.random().toString(36).substring(2, 8).toUpperCase();
+            // 쿠키에서 기존 해시 값을 가져옴
+            const existingHash = getCookieValue("user");
+            // 기존 해시 값이 없으면, 새로운 해시 값을 쿠키에 저장
+            if (!existingHash) {
+                setCookieValue("user", hash, 180); // 쿠키 만료일은 6개월 
+                return hash;
+            } else {
+                // 기존 해시 값이 있으면, 기존 값을 반환
+                return existingHash;
+            }
+        }
+
+        /* data를 만들 땐 모든 field가 들어 있어야 함 */
+        var data = JSON.stringify(
+            {
+                "id": getUVfromCookie(),
+                "landingUrl": window.location.href,
+                "ip": ip,
+                "referer": document.referrer,
+                "time_stamp": getTimeStamp(),
+                "utm": utm,
+                "device": mobile
+            }
+        );
+
+        $(document).ready(function () {
+
+            // 본인의 app script 주소를 넣을 것 
+            addrScript = "";
+
+            console.log("Document Ready");
+
+            /* axios request */
+
+            axios.get(addrScript + '?action=insert&table=visitors&data=' + data)
+                .then(response => {
+                    console.log(JSON.stringify(response));
+                })
+                .catch(error => {
+                    if (error.response) {
+                        // 서버가 2xx 범위를 벗어난 상태 코드로 응답한 경우
+                        console.log(error.response.data);
+                        console.log(error.response.status);
+                        console.log(error.response.headers);
+                    } else if (error.request) {
+                        // 요청이 전송되었지만 응답을 받지 못한 경우
+                        console.log(error.request);
+                    } else {
+                        // 요청 설정 중에 오류가 발생한 경우
+                        console.log('Error', error.message);
+                    }
+                    console.log(error.config);
+                });
+
+                $("#submit").on("click", function () {
+					const email = $("#submit-email").val();
+					const advice = $("#submit-advice").val();
+		    
+					function validateEmail(email) {
+					    var re = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
+					    return re.test(email);
+					}
+		    
+					if (email == '' || !validateEmail(email)) {
+					    alert("이메일이 유효하지 않아 알림을 드릴 수가 없습니다. ");
+					    return;
+					}
+		    
+					var finalData = JSON.stringify({
+					    "id": getUVfromCookie(),
+					    "email": email,
+					    "advice": advice
+					})
+
+                    $.busyLoadFull("show");
+                    axios.get(addrScript + '?action=insert&table=tab_final&data=' + finalData)
+                        .then(response => {
+                            console.log(JSON.stringify(response));
+                            console.log(response.data.data);
+                            // alert(JSON.stringify(response));
+                            $('#submit-email').val('');
+                            $('#submit-advice').val('');
+                            $.busyLoadFull("hide");
+                            $.fn.simplePopup({ type: "html", htmlSelector: "#popup" });
+                        })
+                });
+
+
+        });
+
+    </script>
+
+
+        <center>
+            <div class="form-email">
+                <p>이메일을 남겨주시면 서비스가 런칭되었을 때 알림을 드리겠습니다. </p>
+                <input id="submit-email" type="email" placeholder="알림을 받으실 이메일" /> <br><br>
+                <p>서비스가 이렇게 되었으면 좋겠다는 조언을 해 주세요 </p>
+                <textarea id="submit-advice" name="Text1" cols="40" rows="5" placeholder="서비스에 대한 조언을 남겨주세요"></textarea><br>
+                <button style="width:350px;" id="submit">지금 제출! </button>
+            </div>
+        </center>
+
+        <center style="margin-top: 100px;">
+            <iframe width="600" height="480" src="https://www.youtube.com/embed/2S6Glrn2LS4" title="한국에서 가장 예쁜 대학 캠퍼스의 탄생? 100년 전 연세대학교 설계도의 비밀" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+        </center>
+
+        <div id="popup" style="display:none;">
+            <h1>감사합니다. </h1>
+            <p>이제는 우리는 같은 배를 탔습니다. </p>
+        </div>
+
+</body>
+
+</html>
