@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="320" height="80" viewBox="0 0 320 80" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">vcloset logo</title>
+  <desc id="desc">Logo for vcloset virtual try-on shopping mall</desc>
+
+  <!-- Icon circle -->
+  <circle cx="48" cy="40" r="28" fill="#EEF2FF"/>
+
+  <!-- Hanger / V shape -->
+  <path d="M32 46 L48 28 L64 46" fill="none" stroke="#4F46E5" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- Hook -->
+  <path d="M48 24
+           C48 20 52 20 52 22
+           C52 24 50 25 48 26" 
+        fill="none" stroke="#111827" stroke-width="3" stroke-linecap="round"/>
+
+  <!-- AR frame (virtual try-on) -->
+  <rect x="28" y="32" width="8" height="8" rx="2" fill="none" stroke="#A855F7" stroke-width="2"/>
+  <rect x="60" y="32" width="8" height="8" rx="2" fill="none" stroke="#A855F7" stroke-width="2"/>
+
+  <!-- Brand text -->
+  <g transform="translate(96, 50)">
+    <text x="0" y="0" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" 
+          font-size="28" font-weight="600" letter-spacing="1">
+      <tspan fill="#4F46E5">v</tspan>
+      <tspan fill="#111827">closet</tspan>
+    </text>
+    <text x="2" y="16" font-family="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+          font-size="10" fill="#6B7280" letter-spacing="1">
+      virtual try-on store
+    </text>
+  </g>
+</svg>
