@@ -8,12 +8,12 @@ from dotenv import load_dotenv
 # Load API Key
 load_dotenv()
 api_key = os.getenv("GOOGLE_API_KEY")
-client = genai.Client(api_key=api_key)
 
 # -------------------------------
 # ❗ Virtual Try-On Function
 # -------------------------------
 def run_virtual_tryon(person_img: Image.Image, garment_img: Image.Image):
+  client = genai.Client(api_key=api_key)
   prompt = """
     You are a virtual try-on engine.
     Take the clothing item from the second image and realistically fit it onto the person in the first image.
