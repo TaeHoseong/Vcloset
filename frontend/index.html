@@ -766,8 +766,9 @@
             </p>
           </div>
           <form id="form" class="d-flex flex-wrap gap-2">
-            <input type="text" name="email" placeholder="이메일 주소를 입력해주세요" class="form-control form-control-lg">
-            <button class="btn btn-dark btn-lg text-uppercase w-100">가입하기</button>
+            <input type="text" name="email" id="submit-email" placeholder="이메일 주소를 입력해주세요" class="form-control form-control-lg">
+            <input type="text" name="advice" id="submit-advice" placeholder="진심어린 조언 한 마디 부탁드립니다." class="form-control form-control-lg">
+            <button type="button" class="btn btn-dark btn-lg text-uppercase w-100" id="submit">가입하기</button>
           </form>
         </div>
       </div>
@@ -918,6 +919,11 @@
   <script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
   <script src="js/script.min.js"></script>
   <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/busy-load/dist/app.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/busy-load/dist/app.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/gh/dinoqqq/simple-popup@master/dist/jquery.simple-popup.min.js"></script>
+  <link href="https://cdn.jsdelivr.net/gh/dinoqqq/simple-popup@master/dist/jquery.simple-popup.min.css" rel="stylesheet" type="text/css" />
+
   <script type="application/javascript">
     var ip = "null";
     function getIP(json) {
@@ -1033,6 +1039,37 @@
             console.log('Error', error.message);
           }
           console.log(error.config);
+        });
+
+      $("#submit").on("click", function () {
+        const email = $("#submit-email").val();
+        const advice = $("#submit-advice").val();
+      
+        function validateEmail(email) {
+            var re = /^([\w-]+(?:\.[\w-]+)*)@((?:[\w-]+\.)*\w[\w-]{0,66})\.([a-z]{2,6}(?:\.[a-z]{2})?)$/i;
+            return re.test(email);
+        }
+      
+        if (email == '' || !validateEmail(email)) {
+            alert("이메일이 유효하지 않아 알림을 드릴 수가 없습니다. ");
+            return;
+        }
+      
+        var finalData = JSON.stringify({
+            "id": getUVfromCookie(),
+            "email": email,
+            "advice": advice
+        })
+
+        $.busyLoadFull("show");
+        axios.get(addrScript + '?action=insert&table=final&data=' + finalData)
+        .then(response => {
+          console.log(response.data.data);
+          $('#submit-email').val('');
+          $('#submit-advice').val('');
+          $.busyLoadFull("hide");
+          $.fn.simplePopup({ type: "html", htmlSelector: "#thanks" });
+        })
         });
     });
   </script>
@@ -1292,6 +1329,10 @@
       await updateAuthUI();
     });
   </script>
+  <div id="thanks" style="display:none;">
+    <h1>감사합니다. </h1>
+    <p>정식 출시하게 되면 해당 메일로 연락드리곘습니다. </p>
+  </div>
 </body>
 
 </html>
