@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>내 프로필 - VCloset</title>
+  <style>
+    .profile-container { max-width: 600px; margin: 50px auto; }
+    .preview { width: 100%; max-width: 300px; margin-top: 20px; }
+  </style>
+</head>
+<body>
+
+<div class="profile-container">
+  <h2>내 정보</h2>
+
+  <p id="user-email"></p>
+  <p id="user-name"></p>
+
+  <h3>전신 사진 업로드</h3>
+  <input type="file" id="body-image" accept="image/*">
+  <img id="preview" class="preview" />
+
+  <button onclick="uploadBodyImage()">저장하기</button>
+</div>
+
+<script>
+  // 로그인한 유저 정보 불러오기 (localStorage 방식)
+  const user = JSON.parse(localStorage.getItem("vcloset_user") || "{}");
+
+  document.getElementById("user-email").innerHTML = "이메일: " + user.email;
+  document.getElementById("user-name").innerHTML = "이름: " + user.name;
+
+  document.getElementById("body-image").addEventListener("change", function(e){
+    const file = e.target.files[0];
+    document.getElementById("preview").src = URL.createObjectURL(file);
+  });
+
+  async function uploadBodyImage() {
+    const file = document.getElementById("body-image").files[0];
+    if (!file) { alert("전신 사진을 선택하세요!"); return; }
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("email", user.email);
+
+    const res = await fetch("http://127.0.0.1:5000/api/upload_body_image", {
+      method: "POST",
+      body: formData
+    });
+
+    const data = await res.json();
+    alert(data.message);
+  }
+</script>
+
+</body>
+</html>

@@ -1540,3 +1540,51 @@ a.btn-link.text-light:after {
   background-size: cover;
   transition: transform .3s ease-out;
 }
+
+.profile-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+  }
+  .profile-modal.show {
+    display: flex;
+  }
+  .profile-modal-content {
+    background: #fff;
+    padding: 24px 28px;
+    border-radius: 12px;
+    max-width: 420px;
+    width: 90%;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    position: relative;
+  }
+  .profile-modal-close {
+    position: absolute;
+    right: 12px;
+    top: 8px;
+    border: none;
+    background: transparent;
+    font-size: 24px;
+    cursor: pointer;
+  }
+  .profile-preview {
+    display: block;
+    width: 100%;
+    max-width: 260px;
+    margin-top: 16px;
+    border-radius: 8px;
+    object-fit: cover;
+  }
+  .profile-save-btn {
+    margin-top: 18px;
+    padding: 10px 18px;
+    border-radius: 999px;
+    border: none;
+    background: #111;
+    color: #fff;
+    cursor: pointer;
+  }

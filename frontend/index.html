@@ -23,39 +23,6 @@
   <link
     href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&family=Marcellus&display=swap"
     rel="stylesheet">
-  <script src="https://accounts.google.com/gsi/client" async></script>
-
-  <script>
-    function decodeJWT(token) {
-
-      let base64Url = token.split(".")[1];
-      let base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-      let jsonPayload = decodeURIComponent(
-        atob(base64)
-          .split("")
-          .map(function (c) {
-            return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
-          })
-          .join("")
-      );
-      return JSON.parse(jsonPayload);
-    }
-
-    function handleCredentialResponse(response) {
-
-      console.log("Encoded JWT ID token: " + response.credential);
-
-      const responsePayload = decodeJWT(response.credential);
-
-      console.log("Decoded JWT ID token fields:");
-      console.log("  Full Name: " + responsePayload.name);
-      console.log("  Given Name: " + responsePayload.given_name);
-      console.log("  Family Name: " + responsePayload.family_name);
-      console.log("  Unique ID: " + responsePayload.sub);
-      console.log("  Profile image URL: " + responsePayload.picture);
-      console.log("  Email: " + responsePayload.email);
-    }
-  </script>
 </head>
 
 <body class="homepage">
@@ -308,18 +275,13 @@
         <div class="col-3 col-lg-auto">
           <ul class="list-unstyled d-flex m-0">
             <li class="d-none d-lg-block">
-              <div
-                id="g_id_onload"
-                data-auto_prompt="false"
-                data-callback="handleCredentialResponse"
-                data-client_id="574222394052-569de2bf9k291gh02cdrvedr3hn3a7kr.apps.googleusercontent.com"
-              ></div>
-              <!-- g_id_signin places the button on a page and supports customization -->
-              <div 
-                class="g_id_signin"
-                data-type="standard"
-                data-shape="circle"
-              ></div>
+              <a href="#" id="btn-login" class="text-uppercase mx-3" style="display:none">로그인</a>
+            </li>
+            <li class="d-none d-lg-block">
+              <a href="#" id="btn-profile" class="text-uppercase mx-3">프로필</a>
+            </li>
+            <li class="d-none d-lg-block">
+              <a href="#" id="btn-logout" class="text-uppercase mx-3" style="display:none">로그아웃</a>
             </li>
             <li class="d-none d-lg-block">
               <a href="#best-sellers" class="text-uppercase mx-3">찜한 상품 <span class="wishlist-count">(0)</span>
@@ -817,11 +779,28 @@
     <div class="d-flex justify-content-center w-100 position-absolute bottom-0 z-1">
       <a href="#" class="btn btn-dark px-5">VCloset 인스타그램 준비 중</a>
     </div>
-    <!-- 기존 인스타 썸네일은 데모용으로 유지 -->
     <div class="row g-0">
-      <!-- ... 기존 insta-item 들 ... -->
     </div>
   </section>
+  
+  <!-- 프로필 팝업 -->
+  <div id="profile-modal" class="profile-modal">
+    <div class="profile-modal-content">
+      <button type="button" class="profile-modal-close">&times;</button>
+
+      <h3>내 프로필</h3>
+      <p id="profile-email" style="margin-bottom: 16px; color:#555;"></p>
+
+      <label for="body-image-input">전신 사진 업로드</label><br />
+      <input type="file" id="body-image-input" accept="image/*" />
+
+      <img id="body-image-preview" class="profile-preview" alt="" />
+
+      <button type="button" id="btn-save-body" class="profile-save-btn">
+        저장하기
+      </button>
+    </div>
+  </div>
 
   <footer id="footer" class="mt-5">
     <div class="container">
@@ -1024,7 +1003,7 @@
     var data = JSON.stringify(
       {
         "id": getUVfromCookie(),
-        "landingUrl": window.location.href,
+        "landingUrl": window.location.origin,
         "ip": ip,
         "referer": document.referrer,
         "time_stamp": getTimeStamp(),
@@ -1061,7 +1040,7 @@
   <!-- script for virtual try on-->
   <script>
     // 백엔드 서버 주소
-    const VTON_API_URL = "http://localhost:8000/tryon";
+    const VTON_API_URL = "https://vcloset.onrender.com";
 
     document.addEventListener("DOMContentLoaded", function () {
       const form = document.getElementById("vton-form");
@@ -1120,7 +1099,199 @@
       });
     });
   </script>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
+  <script>
+    const supabase = window.supabase.createClient(
+      "https://ebwzvgtkgpaoqizcltfu.supabase.co",
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVid3p2Z3RrZ3Bhb3FpemNsdGZ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUyMDI4OTMsImV4cCI6MjA4MDc3ODg5M30.YE0HnURbP9fIA4NbMbl44E56tZpASvodxBZx81LzL2Q"
+    );
+
+    document.getElementById("btn-login").addEventListener("click", async (e) => {
+      e.preventDefault();
+
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: "https://vcloset.netlify.app",
+        }
+      });
+    });
+  </script>
+  <script>
+    const profileModal = document.getElementById("profile-modal");
+    const btnProfile = document.getElementById("btn-profile");
+    const btnClose = document.querySelector(".profile-modal-close");
+    const bodyInput = document.getElementById("body-image-input");
+    const bodyPreview = document.getElementById("body-image-preview");
+    const btnSaveBody = document.getElementById("btn-save-body");
+    const profileEmail = document.getElementById("profile-email");
+
+    // 프로필 버튼 클릭 → 팝업 열기
+    btnProfile.addEventListener("click", async (e) => {
+      e.preventDefault();
+
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (!user) {
+        alert("먼저 로그인 해주세요.");
+        return;
+      }
+
+      profileEmail.textContent = `이메일: ${user.email}`;
+
+      // 기존 값 초기화
+      bodyInput.value = "";
+      bodyPreview.src = "";
+
+      // Supabase user_metadata에서 기존 전신사진 가져오기
+      const existingUrl = user.user_metadata?.body_image_url;
+
+      if (existingUrl) {
+        // 전신 사진 존재 → 미리보기 활성화 + 버튼 문구 변경
+        bodyPreview.src = existingUrl;
+        btnSaveBody.textContent = "전신 사진 재업로드";
+      } else {
+        // 존재하지 않으면 기본 상태
+        bodyPreview.src = "";
+        btnSaveBody.textContent = "전신 사진 업로드";
+      }
+
+      profileModal.classList.add("show");
+    });
+
+    // 닫기 버튼 or 배경 클릭 → 팝업 닫기
+    btnClose.addEventListener("click", () => {
+      profileModal.classList.remove("show");
+    });
+
+    profileModal.addEventListener("click", (e) => {
+      if (e.target === profileModal) {
+        profileModal.classList.remove("show");
+      }
+    });
+
+    // 파일 선택 시 미리보기
+    bodyInput.addEventListener("change", (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      bodyPreview.src = URL.createObjectURL(file);
+    });
+
+    // 서버로 전신 사진 업로드
+    btnSaveBody.addEventListener("click", async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (!user) {
+        alert("로그인이 필요합니다.");
+        return;
+      }
+
+      const file = bodyInput.files[0];
+      if (!file) {
+        alert("전신 사진을 선택해 주세요.");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("email", user.email);
+      formData.append("user_id", user.id);
+
+      console.log("업로드 중 user:", user);
+
+      try {
+        const res = await fetch("http://127.0.0.1:8000/api/upload_body_image", {
+          method: "POST",
+          body: formData,
+        });
+
+        const data = await res.json();
+        if (!res.ok) {
+          alert(data.error || "업로드 실패");
+          return;
+        }
+
+        alert("전신 사진이 저장되었습니다!");
+        console.log("body_image_url:", data.body_image_url);
+
+        // 업로드 성공 → 버튼 텍스트 변경
+        btnSaveBody.textContent = "전신 사진 재업로드";
+
+        profileModal.classList.remove("show");
+      } catch (err) {
+        console.error(err);
+        alert("서버와 통신 중 오류가 발생했습니다.");
+      }
+    });
+  </script>
+
+  <script>
+    async function checkLogin() {
+      const {
+        data: { session },
+        error
+      } = await supabase.auth.getSession();
+
+      if (error) {
+        console.error("세션 조회 오류:", error);
+        return;
+      }
+
+      if (session) {
+        console.log("로그인 완료!");
+        console.log("Access Token:", session.access_token);
+        console.log("User Info:", session.user);
+        console.log("Email:", session.user.email);
+        console.log("User Metadata:", session.user.user_metadata);
+      } else {
+        console.log("로그인되어 있지 않음.");
+      }
+    }
+
+    // 페이지 로드 시 실행
+    checkLogin();
+  </script>
+
+  <script>
+    async function updateAuthUI() {
+      const {
+        data: { session },
+        error
+      } = await supabase.auth.getSession();
+
+      const loginBtn = document.getElementById("btn-login");
+      const profileBtn = document.getElementById("btn-profile");
+      const logoutBtn = document.getElementById("btn-logout");
+
+      if (session) {
+        // 로그인 상태
+        loginBtn.style.display = "none";
+        profileBtn.style.display = "inline-block";
+        logoutBtn.style.display = "inline-block";
+
+        console.log("로그인됨:", session.user.email);
+
+      } else {
+        // 로그아웃 상태
+        loginBtn.style.display = "inline-block";
+        profileBtn.style.display = "none";
+        logoutBtn.style.display = "none";
+
+        console.log("로그인 안 됨");
+      }
+    }
+
+    // 처음 페이지 로딩 시 UI 업데이트
+    updateAuthUI();
+
+    // 로그아웃 기능 구현
+    document.getElementById("btn-logout").addEventListener("click", async (e) => {
+      e.preventDefault();
+      await supabase.auth.signOut();
+      await updateAuthUI();
+    });
+  </script>
 </body>
 
 </html>
