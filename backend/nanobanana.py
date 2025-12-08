@@ -1,8 +1,8 @@
 from google import genai
-from google.genai import types
 from PIL import Image
 import io
 import os
+import argparse
 from dotenv import load_dotenv
 
 # Load API Key
@@ -43,9 +43,22 @@ def run_virtual_tryon(person_img: Image.Image, garment_img: Image.Image):
 # ❗ Example Usage
 # -------------------------------
 if __name__ == "__main__":
-    garment = Image.open("../images/garment1.jpg")
-    person = Image.open("../images/demo/person2.jpg")
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+      "--person",
+      help="person img path",
+      default="../demo/p1.png"
+    )
+    parser.add_argument(
+      "--garment",
+      help="garment img path",
+      default="../demo/g1.png"
+    )
+    args = parser.parse_args()
+    
+    garment = Image.open(args.garment)
+    person = Image.open(args.person)
 
     result = run_virtual_tryon(person, garment)
-    result.save("generated_image.png")
-    print("Virtual Try-On Image Saved: generated_image.png")
+    result.save("../demo/result.png")
+    print("Virtual Try-On Image Saved: result.png")
