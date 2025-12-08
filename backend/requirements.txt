@@ -6,3 +6,5 @@ google-genai
 requests
 gunicorn
 supabase
+supabase-auth
+argparse
