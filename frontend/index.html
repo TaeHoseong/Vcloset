@@ -1201,7 +1201,7 @@
       console.log("업로드 중 user:", user);
 
       try {
-        const res = await fetch("http://127.0.0.1:8000/api/upload_body_image", {
+        const res = await fetch("https://vcloset.onrender.com/api/upload_body_image", {
           method: "POST",
           body: formData,
         });
