@@ -5,3 +5,4 @@ Pillow
 google-genai
 requests
 gunicorn
+supabase
